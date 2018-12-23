@@ -1,4 +1,5 @@
-﻿using SendGridEmailApplication.Interface;
+﻿using SendGridEmailApplication.Controllers;
+using SendGridEmailApplication.Interface;
 using SendGridEmailApplication.Models;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,8 @@ namespace SendGridEmailApplication.Common
     public class SMSNotificationService: ISmsSender
     {
         //private volatile static SendGridEmailService sendGridEmailService;
-        private static SMSNotificationService m_smsNotificationService; 
+        private static SMSNotificationService m_smsNotificationService;
+        DummyController dummyController = new DummyController();
         private SMSNotificationService() { }
 
         public static SMSNotificationService InstanceCreation
@@ -36,16 +38,14 @@ namespace SendGridEmailApplication.Common
         /// Method to send email
         /// </summary>
         /// <param name="contract"></param>
-        public void SendSms(SmsContract contract)
+        public async void SendSms(SmsContract contract)
         {
             // Use your account SID and authentication token instead
             // of the placeholders shown here.
-            //const string accountSID = "ACdfa7c77b34b80936d3f9511d0ac02777";
-            //const string authToken = "d1c44577391070452d84adc85011351c";
 
             var accountSID = ConfigurationManager.AppSettings["accountSID"];
             var authToken = ConfigurationManager.AppSettings["authToken"];
-
+            
             // Initialize the TwilioClient.
             TwilioClient.Init(accountSID, authToken);
             TwilioRestClient twilio = new TwilioRestClient(accountSID, authToken);
@@ -63,6 +63,8 @@ namespace SendGridEmailApplication.Common
                 var split_To = contract.ToPhoneNumber.Split(',', ';');
                 foreach (var to in split_To)
                 {
+                    dummyController.ValidatePhoneNumber(to, contract.ToPhoneNumber);
+
                     MessageResource.Create(
                     to: new PhoneNumber(to),
                     from: new PhoneNumber(contract.From),

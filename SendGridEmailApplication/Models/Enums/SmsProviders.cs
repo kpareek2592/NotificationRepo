@@ -7,6 +7,6 @@ namespace SendGridEmailApplication.Models.Enums
 {
     public enum SmsProviders
     {
-        Twillio
+        Twilio
     }
 }

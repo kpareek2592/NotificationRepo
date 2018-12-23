@@ -9,6 +9,7 @@ using System.Web.Http;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using Twilio.Types;
+using System.Configuration;
 
 namespace SendGridEmailApplication.Controllers
 {
@@ -19,6 +20,7 @@ namespace SendGridEmailApplication.Controllers
     {
         ISmsSender smsSender = null;
         SmsSenderFactory smsSenderFactory = null;
+        DummyController dummyController = new DummyController();
 
         /// <summary>
         /// Constructor
@@ -31,16 +33,33 @@ namespace SendGridEmailApplication.Controllers
         /// <summary>
         /// Method to Send SMS
         /// </summary>
-        /// <param name="provider"></param>
         /// <param name="contract"></param>
         /// <returns>HttpResponseMessage</returns>
         [HttpPost]
-        [Route("api/sms/{provider}")]
-        public HttpResponseMessage SendSms([FromUri]SmsProviders provider, SmsContract contract)
+        [Route("api/sms")]
+        public HttpResponseMessage SendSms(SmsContract contract)
         {
-            var myregex = new Regex(@"(,;)", RegexOptions.IgnoreCase, TimeSpan.FromSeconds(1));
+            var smsProvider = ConfigurationManager.AppSettings["SmsProvider"];
+            var smsLength = ConfigurationManager.AppSettings["SmsLength"];
+            var fromNumber = ConfigurationManager.AppSettings["From"];
+
+            contract.From = fromNumber;
+            SmsProviders provider = (SmsProviders)Enum.Parse(typeof(SmsProviders), smsProvider);
             smsSender = null;
             smsSender = smsSenderFactory.SmsSender(provider);
+
+
+            dummyController.ValidateParameterForNull(contract.ToPhoneNumber, contract.ToPhoneNumber);
+            dummyController.ValidateParameterForNull(contract.Body, contract.Body);
+            dummyController.ValidateParameterForNull(contract.From, contract.From);
+            dummyController.ParseString(contract.From, nameof(contract.From));
+            dummyController.ParseString(contract.Body, nameof(contract.Body));
+
+            if (contract.Body.Length > Convert.ToInt32(smsLength))
+            {
+                var message = Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Message size only upto 1600 characters is allowed.");
+                return message;
+            }
 
             if (!string.IsNullOrEmpty(contract.ToPhoneNumber))
             {
@@ -48,6 +67,8 @@ namespace SendGridEmailApplication.Controllers
                 var split_To = contract.ToPhoneNumber.Split(',', ';');
                 foreach (var to in split_To)
                 {
+                    dummyController.ParseString(to, nameof(to));
+
                     bool isPhoneNumber = Regex.IsMatch(to,
                     @"^([0|\+[0-9]{1,5})?([7-9][0-9]{9})$",
                     RegexOptions.IgnoreCase);

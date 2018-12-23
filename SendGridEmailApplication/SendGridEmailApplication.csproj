@@ -47,6 +47,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.IdentityModel.Logging, Version=1.1.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Logging.1.1.2\lib\net451\Microsoft.IdentityModel.Logging.dll</HintPath>
@@ -169,6 +172,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApiControllerBase.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
@@ -202,9 +206,9 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
-    <Compile Include="Common\AttachmentUpload.cs" />
     <Compile Include="Common\SendGridEmailService.cs" />
     <Compile Include="Common\SMSNotificationService.cs" />
+    <Compile Include="Controllers\DummyController.cs" />
     <Compile Include="Controllers\NotificationController.cs" />
     <Compile Include="Controllers\SmsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -223,7 +227,14 @@
     <Compile Include="Models\Enums\SmsProviders.cs" />
     <Compile Include="Models\Enums\EmailProviders.cs" />
     <Compile Include="Models\Enums\NotificationType.cs" />
+    <Compile Include="PlatformCommon\Entities\Operations.cs" />
+    <Compile Include="PlatformCommon\Exceptions\APIError.cs" />
+    <Compile Include="PlatformCommon\Exceptions\APIException.cs" />
+    <Compile Include="PlatformCommon\Exceptions\BadRequestError.cs" />
+    <Compile Include="PlatformCommon\Exceptions\BadRequestException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RequestedFormat.cs" />
+    <Compile Include="Resources.Designer.cs" />
     <Compile Include="Validation\EmailValidation.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -232,8 +243,6 @@
     <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
-    <Content Include="Data\a1.txt" />
-    <Content Include="Data\Mi TV 1.PNG" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
@@ -258,8 +267,6 @@
     <Content Include="Areas\HelpPage\Views\Help\DisplayTemplates\CollectionModelDescription.cshtml" />
     <Content Include="Areas\HelpPage\Views\Help\DisplayTemplates\ApiGroup.cshtml" />
     <Content Include="Areas\HelpPage\Views\Help\Api.cshtml" />
-    <Content Include="Data\FEP_Guide_Lines.pdf" />
-    <Content Include="Data\fp_dc_setup_guide.pdf" />
     <None Include="Properties\PublishProfiles\notificationsrvc - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\notificationsrvc - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
@@ -268,7 +275,9 @@
     <Content Include="Scripts\jquery-3.3.1.slim.js" />
     <Content Include="Scripts\jquery-3.3.1.slim.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
@@ -315,6 +324,9 @@
     <None Include="packages.config" />
     <Content Include="Scripts\jquery-3.3.1.slim.min.map" />
     <Content Include="Scripts\jquery-3.3.1.min.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources.resx" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

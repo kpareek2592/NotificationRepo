@@ -27,22 +27,22 @@ namespace SendGridEmailApplication.Tests.Controllers
             _notificationSender = new Mock<INotificationSender>();
         }
 
-        [TestCase(EmailProviders.SendGrid)]
-        public void SendEmail_Test1(EmailProviders providers)
-        {
-            //Arrange
-            var _mockController = new NotificationController();
+        //[TestCase(EmailProviders.SendGrid)]
+        //public void SendEmail_Test1(EmailProviders providers)
+        //{
+        //    //Arrange
+        //    var _mockController = new NotificationController();
             
-            //var _controller = _mockController.Object;
-            _controller.Setup(x => x.SendEmail(providers)).Returns(GetResponse());
+        //    //var _controller = _mockController.Object;
+        //    _controller.Setup(x => x.SendEmail(providers)).Returns(GetResponse());
 
 
-            //Act
-            var result = _mockController.SendEmail(providers);
+        //    //Act
+        //    var result = _mockController.SendEmail(providers);
 
-            //Assert
-            NUnit.Framework.Assert.IsNotNull(result);
-        }
+        //    //Assert
+        //    NUnit.Framework.Assert.IsNotNull(result);
+        //}
 
         //[TestCase(SmsProviders.Twillio)]
         //public void SendSms_Test1(SmsProviders providers)

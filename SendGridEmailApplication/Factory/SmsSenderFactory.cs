@@ -18,7 +18,7 @@ namespace SendGridEmailApplication.Factory
 
             switch (provider)
             {
-                case SmsProviders.Twillio:
+                case SmsProviders.Twilio:
                     smsSender = SMSNotificationService.InstanceCreation;
                     break;
                               

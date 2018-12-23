@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web;
 using SendGrid;
 using SendGrid.Helpers.Mail;
+using SendGridEmailApplication.Controllers;
 using SendGridEmailApplication.Interface;
 using SendGridEmailApplication.Models;
 
@@ -16,8 +17,8 @@ namespace SendGridEmailApplication.Common
     /// </summary>
     public class SendGridEmailService : IEmailSender
     {
-        //private volatile static SendGridEmailService sendGridEmailService;
         private static SendGridEmailService sendGridEmailService;
+        DummyController dummyController = new DummyController();
         private SendGridEmailService(){ }
 
         /// <summary>
@@ -42,6 +43,7 @@ namespace SendGridEmailApplication.Common
         /// <param name="httpRequest"></param>
         public async Task SendEmail(EmailContract contract, HttpRequest httpRequest) 
         {
+            DummyController dummyController = new DummyController();
             try
             {
                 var apikey = ConfigurationManager.AppSettings["SendGridApiKey"];
@@ -52,16 +54,16 @@ namespace SendGridEmailApplication.Common
                     From = new EmailAddress(contract.From),
                     Subject = contract.Subject,
                     HtmlContent = contract.Body,
-                    PlainTextContent = "Hello, Email from the helper [SendSingleEmailAsync]!"
                 };
 
                 if (contract.ToEmailAddress != null)
                 {
-                    string[] split_To = contract.ToEmailAddress.Split(new Char[] { ',', ';' });
-
+                    var split_To = SplitEmail(contract.ToEmailAddress);
                     var toos = new List<EmailAddress>();
                     foreach (var toEmail in split_To)
                     {
+                        dummyController.ValidateEmail(toEmail, "EmailInfo");
+
                         toos.Add(new EmailAddress(toEmail));
                     }
                     msg.AddTos(toos);
@@ -69,10 +71,11 @@ namespace SendGridEmailApplication.Common
 
                 if (contract.CcEmailAddress != null)
                 {
-                    string[] split_Cc = contract.CcEmailAddress.Split(new Char[] { ',', ';' });
+                    var split_Cc = SplitEmail(contract.ToEmailAddress);
                     var ccs = new List<EmailAddress>();
                     foreach (var ccEmail in split_Cc)
                     {
+                        dummyController.ValidateEmail(ccEmail, "EmailInfo");
                         ccs.Add(new EmailAddress(ccEmail));
                     }
                     msg.AddCcs(ccs); 
@@ -80,10 +83,11 @@ namespace SendGridEmailApplication.Common
 
                 if (contract.BccEmailAddress != null)
                 {
-                    string[] split_Bcc = contract.BccEmailAddress.Split(new Char[] { ',', ';' });
+                    var split_Bcc = SplitEmail(contract.ToEmailAddress);
                     var bccs = new List<EmailAddress>();
                     foreach (var bccEmail in split_Bcc)
                     {
+                        dummyController.ValidateEmail(bccEmail, "EmailInfo");
                         bccs.Add(new EmailAddress(bccEmail));
                     }
 
@@ -96,8 +100,11 @@ namespace SendGridEmailApplication.Common
                     foreach (string file in httpRequest.Files)
                     {
                         var postedFile = httpRequest.Files[file];
-                        Stream filestream = postedFile.InputStream;
-                        await msg.AddAttachmentAsync(postedFile.FileName, filestream);
+                        if (DummyController.ValidateAttachment(postedFile.FileName))
+                        {
+                            Stream filestream = postedFile.InputStream;
+                            await msg.AddAttachmentAsync(postedFile.FileName, filestream);
+                        }
                     }
                 }
 
@@ -108,6 +115,17 @@ namespace SendGridEmailApplication.Common
             {
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        /// <summary>
+        /// Method to split string based on ',' and ';'
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        private string[] SplitEmail(string email)
+        {
+            string[] split_emails = email.Split(new Char[] { ',', ';' });
+            return split_emails;
         }
     }
 }
