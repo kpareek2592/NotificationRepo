@@ -56,7 +56,7 @@ namespace SendGridEmailApplication.Common
                     HtmlContent = contract.Body,
                 };
 
-                if (contract.ToEmailAddress != null)
+                if (!string.IsNullOrWhiteSpace(contract.ToEmailAddress))
                 {
                     var split_To = SplitEmail(contract.ToEmailAddress);
                     var toos = new List<EmailAddress>();
@@ -69,9 +69,9 @@ namespace SendGridEmailApplication.Common
                     msg.AddTos(toos);
                 }
 
-                if (contract.CcEmailAddress != null)
+                if (!string.IsNullOrWhiteSpace(contract.CcEmailAddress))
                 {
-                    var split_Cc = SplitEmail(contract.ToEmailAddress);
+                    var split_Cc = SplitEmail(contract.CcEmailAddress);
                     var ccs = new List<EmailAddress>();
                     foreach (var ccEmail in split_Cc)
                     {
@@ -81,9 +81,9 @@ namespace SendGridEmailApplication.Common
                     msg.AddCcs(ccs); 
                 }
 
-                if (contract.BccEmailAddress != null)
+                if (!string.IsNullOrWhiteSpace(contract.BccEmailAddress))
                 {
-                    var split_Bcc = SplitEmail(contract.ToEmailAddress);
+                    var split_Bcc = SplitEmail(contract.BccEmailAddress);
                     var bccs = new List<EmailAddress>();
                     foreach (var bccEmail in split_Bcc)
                     {
