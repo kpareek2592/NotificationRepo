@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using Twilio.Types;
 using System.Configuration;
+using System.Threading.Tasks;
 
 namespace SendGridEmailApplication.Controllers
 {
@@ -37,13 +38,12 @@ namespace SendGridEmailApplication.Controllers
         /// <returns>HttpResponseMessage</returns>
         [HttpPost]
         [Route("api/sms")]
-        public HttpResponseMessage SendSms(SmsContract contract)
+        public async Task<HttpResponseMessage> SendSms(SmsContract contract)
         {
             var smsProvider = ConfigurationManager.AppSettings["SmsProvider"];
             var smsLength = ConfigurationManager.AppSettings["SmsLength"];
             var fromNumber = ConfigurationManager.AppSettings["From"];
 
-            contract.From = fromNumber;
             SmsProviders provider = (SmsProviders)Enum.Parse(typeof(SmsProviders), smsProvider);
             smsSender = null;
             smsSender = smsSenderFactory.SmsSender(provider);
@@ -51,8 +51,8 @@ namespace SendGridEmailApplication.Controllers
 
             dummyController.ValidateParameterForNull(contract.ToPhoneNumber, contract.ToPhoneNumber);
             dummyController.ValidateParameterForNull(contract.Body, contract.Body);
-            dummyController.ValidateParameterForNull(contract.From, contract.From);
-            dummyController.ParseString(contract.From, nameof(contract.From));
+            dummyController.ValidateParameterForNull(fromNumber, fromNumber);
+            dummyController.ParseString(fromNumber, nameof(fromNumber));
             dummyController.ParseString(contract.Body, nameof(contract.Body));
 
             if (contract.Body.Length > Convert.ToInt32(smsLength))
@@ -75,23 +75,13 @@ namespace SendGridEmailApplication.Controllers
                     if (!isPhoneNumber)
                     {
                         var message = Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid Phone Number.");
-                        return message;
+                        //return message;
                     }
                 }
             }
-            if (string.IsNullOrEmpty(contract.ToPhoneNumber))
-            {
-                var message = Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Atleast one receipient number is required.");
-                return message;
-            }
-            if (string.IsNullOrEmpty(contract.Body))
-            {
-                var message = Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Body is empty.");
-                return message;
-            }
             try
             {
-                smsSender.SendSms(contract);
+                await smsSender.SendSms(contract);
                 var message = Request.CreateResponse(HttpStatusCode.OK, "Message Sent");
                 return message;
             }

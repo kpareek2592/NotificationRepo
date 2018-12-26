@@ -68,6 +68,41 @@ namespace SendGridEmailApplication.Controllers
         }
 
         /// <summary>
+        /// Validates input is a valid email address. 
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="parameterName"></param>
+        protected internal string ValidateEmail1(string email)
+        {
+            var split_emails = new List<string>();
+            List<string> notValidEmails = new List<string>();
+            List<string> ValidEmails = new List<string>();
+            split_emails = email?.Split(new Char[] { ',', ';' }).ToList();
+            split_emails.ForEach(x =>
+            {
+                if (ValidateEmail(x))
+                {
+                    ValidEmails.Add(x);
+                }
+                if (!ValidateEmail(x))
+                {
+                    notValidEmails.Add(x);
+                        //log4net.Infornatiom(x)
+                }
+            });            
+           
+            return notValidEmails.Count == split_emails.Count ? throw new BadRequestException(Resources.InvalidEmail): String.Join(",", split_emails.Except(notValidEmails).ToList().ToArray());
+        }
+
+        public bool ValidateEmail(string emailAddress)
+        {
+            var isEmail = Regex.IsMatch(emailAddress,
+                   @"\A(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\Z",
+                   RegexOptions.IgnoreCase);
+            return isEmail;
+        }
+
+        /// <summary>
         /// Validates input is a valid phone number. 
         /// </summary>
         /// <param name="number">The phone number to validate</param>

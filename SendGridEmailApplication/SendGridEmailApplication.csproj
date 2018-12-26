@@ -206,9 +206,11 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
+    <Compile Include="Common\TestEmailService.cs" />
     <Compile Include="Common\SendGridEmailService.cs" />
-    <Compile Include="Common\SMSNotificationService.cs" />
+    <Compile Include="Common\TwilioSmsService.cs" />
     <Compile Include="Controllers\DummyController.cs" />
+    <Compile Include="Controllers\TestEmail.cs" />
     <Compile Include="Controllers\NotificationController.cs" />
     <Compile Include="Controllers\SmsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -221,6 +223,10 @@
     <Compile Include="Interface\ISmsSender.cs" />
     <Compile Include="Interface\IEmailSender.cs" />
     <Compile Include="Interface\INotificationSender.cs" />
+    <Compile Include="Models\AttachmentContract.cs" />
+    <Compile Include="Models\Email.cs" />
+    <Compile Include="Models\EmailServiceException.cs" />
+    <Compile Include="Models\SendGridEvents.cs" />
     <Compile Include="Models\SmsContract.cs" />
     <Compile Include="Models\EmailContract.cs" />
     <Compile Include="Models\NotificationContract.cs" />

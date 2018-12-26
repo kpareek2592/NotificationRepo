@@ -5,6 +5,7 @@ using SendGridEmailApplication.Models;
 using SendGridEmailApplication.Models.Enums;
 using SendGridEmailApplication.Validation;
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Net;
 using System.Net.Http;
@@ -45,56 +46,47 @@ namespace SendGridEmailApplication.Controllers
             var attachmentLength = ConfigurationManager.AppSettings["AttachmentLength"];
             EmailProviders provider = (EmailProviders)Enum.Parse(typeof(EmailProviders), emailProvider);
             emailSender = null;
-            emailSender = emailSenderFactory.EmailSender(provider);
+            //emailSender = emailSenderFactory.EmailSender(provider);
+            
+            var result = await Request.Content.ReadAsMultipartAsync();
 
-            var httpRequest = HttpContext.Current.Request;
-            var stringContract = HttpContext.Current.Request.Params["content"];
-            EmailContract contract = JsonConvert.DeserializeObject<EmailContract>(stringContract);
+            var requestJson = await result.Contents[0].ReadAsStringAsync();
+            var contract = JsonConvert.DeserializeObject<EmailContract>(requestJson);
+            List<AttachmentContract> attachments = new List<AttachmentContract>();
+
+            if (result.Contents.Count > 1)
+            {
+                for (int i = 1; i < result.Contents.Count; i++)
+                {
+                    var fileByteArray = await result.Contents[i].ReadAsByteArrayAsync();
+                    var fileName = result.Contents[i].Headers.ContentDisposition.FileName.Replace("\"", "");
+                    var contentType = result.Contents[i].Headers.ContentType.MediaType;
+                    attachments.Add(new AttachmentContract { fileBytes = fileByteArray, FileName = fileName, ContentType = contentType });
+
+                }
+            }
 
             
-            long contentSize = httpRequest.ContentLength;
-            if (contentSize > Convert.ToInt32(attachmentLength))
-            {
-                var message = Request.CreateErrorResponse(HttpStatusCode.BadRequest, "File upload limit should not exceed 16 MB.");
-                return message;
-            }
+
+
+            //long contentSize = httpRequest.ContentLength;
+            //if (contentSize > Convert.ToInt32(attachmentLength))
+            //{
+            //    var message = Request.CreateErrorResponse(HttpStatusCode.BadRequest, "File upload limit should not exceed 16 MB.");
+            //    return message;
+            //}
 
             dummyController.ParseString(contract.Body, nameof(contract.Body));
             dummyController.ParseString(contract.From, nameof(contract.From));
 
             dummyController.ValidateParameterForNull(contract.From, contract.From);
             dummyController.ValidateParameterForNull(contract.ToEmailAddress, contract.ToEmailAddress);
-            //#region Validation testing
-
-            //if (string.IsNullOrEmpty(contract.From))
-            //{
-            //    var response = Request.CreateErrorResponse(HttpStatusCode.BadRequest, "From Email Address is required");
-            //    return response;
-            //}
-            //if (string.IsNullOrEmpty(contract.ToEmailAddress))
-            //{
-            //    var response = Request.CreateErrorResponse(HttpStatusCode.BadRequest, "To Email Address is required");
-            //    return response;
-            //}
-
-            //if (!string.IsNullOrEmpty(contract.From))
-            //{
-            //    bool isEmail = Regex.IsMatch(contract.From,
-            //        @"\A(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\Z",
-            //        RegexOptions.IgnoreCase);
-            //    if (!isEmail)
-            //    {
-            //        var response = Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid Email Address");
-            //        return response;
-            //    }
-            //}
-
-            //#endregion
+            contract.ToEmailAddress = dummyController.ValidateEmail1(contract.ToEmailAddress);
 
             try
             {
                 //Validate(contract);
-                await emailSender.SendEmail(contract, httpRequest);
+                await emailSender.SendEmail(contract, attachments);
                 var message = Request.CreateResponse(HttpStatusCode.OK);
                 return message;
             }
@@ -102,32 +94,6 @@ namespace SendGridEmailApplication.Controllers
             {
                 var message = Request.CreateErrorResponse(HttpStatusCode.BadRequest, ex.Message);
                 return message;
-            }
-        }
-
-        public void Validate(EmailContract contract)
-        {
-            if (string.IsNullOrEmpty(contract.From))
-            {
-                var response = Request.CreateErrorResponse(HttpStatusCode.BadRequest, "From Email Address is required");
-                throw new HttpResponseException(response);
-            }
-            if (string.IsNullOrEmpty(contract.ToEmailAddress))
-            {
-                var response = Request.CreateErrorResponse(HttpStatusCode.BadRequest, "To Email Address is required");
-                throw new HttpResponseException(response);
-            }
-
-            if (!string.IsNullOrEmpty(contract.From))
-            {
-                bool isEmail = Regex.IsMatch(contract.From,
-                    @"\A(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\Z",
-                    RegexOptions.IgnoreCase);
-                if (!isEmail)
-                {
-                    var response = Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid Email Address");
-                    throw new HttpResponseException(response);
-                }
             }
         }
     }

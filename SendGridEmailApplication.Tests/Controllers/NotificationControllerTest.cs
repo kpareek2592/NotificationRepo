@@ -11,38 +11,34 @@ using System.Threading.Tasks;
 namespace SendGridEmailApplication.Tests.Controllers
 {
     [TestClass]
-    class NotificationControllerTest
+    public class NotificationControllerTest
     {
         private Mock<EmailContract> _emailContract;
         private Mock<INotificationSender> _notificationSender;
         private Mock<NotificationController> _controller;
-        private Mock<SmsContract> _smsContract;
 
         [TestInitialize]
         public void Init()
         {
             _controller = new Mock<NotificationController>();
             _emailContract = new Mock<EmailContract>();
-            _smsContract = new Mock<SmsContract>();
             _notificationSender = new Mock<INotificationSender>();
         }
 
-        //[TestCase(EmailProviders.SendGrid)]
-        //public void SendEmail_Test1(EmailProviders providers)
-        //{
-        //    //Arrange
-        //    var _mockController = new NotificationController();
-            
-        //    //var _controller = _mockController.Object;
-        //    _controller.Setup(x => x.SendEmail(providers)).Returns(GetResponse());
+        public void SendEmail_Test1()
+        {
+            //Arrange
+            var _mockController = new NotificationController();
 
+            //var _controller = _mockController.Object;
+            _controller.Setup(x => x.SendEmail()).Returns(GetResponse());
 
-        //    //Act
-        //    var result = _mockController.SendEmail(providers);
+            //Act
+            var result = _mockController.SendEmail();
 
-        //    //Assert
-        //    NUnit.Framework.Assert.IsNotNull(result);
-        //}
+            //Assert
+            Microsoft.VisualStudio.TestTools.UnitTesting.Assert.IsNotNull(result);
+        }
 
         //[TestCase(SmsProviders.Twillio)]
         //public void SendSms_Test1(SmsProviders providers)
@@ -81,7 +77,6 @@ namespace SendGridEmailApplication.Tests.Controllers
         {
             return new SmsContract()
             {
-                From = "123456789",
                 Body = "This is a test sms sent via twilio",
                 ToPhoneNumber = "1234567"
             };
@@ -90,14 +85,6 @@ namespace SendGridEmailApplication.Tests.Controllers
         private Task<HttpResponseMessage> GetResponse()
         {
             return Task.FromResult(new HttpResponseMessage() { StatusCode = System.Net.HttpStatusCode.OK });
-        }
-
-        private EmailProviders GetEmailProviders()
-        {
-            return new EmailProviders()
-            {
-
-            };
         }
 
         #endregion

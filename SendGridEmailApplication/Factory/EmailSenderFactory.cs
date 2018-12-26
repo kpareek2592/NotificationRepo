@@ -19,7 +19,7 @@ namespace SendGridEmailApplication.Factory
             switch (providers)
             {
                 case EmailProviders.SendGrid:
-                    emailSender = SendGridEmailService.InstanceCreation;
+                    emailSender = new SendGridEmailService();
                     break;
                              
                 default:

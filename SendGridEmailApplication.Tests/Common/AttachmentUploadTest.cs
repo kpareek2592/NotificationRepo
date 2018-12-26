@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace SendGridEmailApplication.Tests.Common
 {
     [TestClass]
-    class AttachmentUploadTest
+    public class AttachmentUploadTest
     {
         //[TestMethod]
         //public bool ValidateUpload()

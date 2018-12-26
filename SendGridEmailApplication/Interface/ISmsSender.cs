@@ -9,6 +9,6 @@ namespace SendGridEmailApplication.Interface
 {
     public interface ISmsSender
     {
-        void SendSms(SmsContract contract); 
+        Task SendSms(SmsContract contract); 
     }
 }
