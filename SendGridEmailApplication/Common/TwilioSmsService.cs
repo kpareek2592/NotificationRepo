@@ -18,13 +18,15 @@ namespace SendGridEmailApplication.Common
     /// </summary>
     public class TwilioSmsService : ISmsSender
     {
-        private readonly TwilioRestClient _twilioClient;
+        private TwilioRestClient _twilioClient;
+        private string accountSID = ConfigurationManager.AppSettings["accountSID"];
+        private string authToken = ConfigurationManager.AppSettings["authToken"];
 
-        public TwilioSmsService()
+        /// <summary>
+        /// Method to initialize Twilio instance
+        /// </summary>
+        private void Initializer()
         {
-            var accountSID = ConfigurationManager.AppSettings["accountSID"];
-            var authToken = ConfigurationManager.AppSettings["authToken"];
-            
             TwilioClient.Init(accountSID, authToken);
             _twilioClient = new TwilioRestClient(accountSID, authToken);
         }
@@ -34,6 +36,7 @@ namespace SendGridEmailApplication.Common
         /// <param name="contract"></param>
         public async Task SendSms(SmsContract contract)
         {
+            Initializer();
             var fromNumber = ConfigurationManager.AppSettings["From"];
             List<Task<MessageResource>> tasks = new List<Task<MessageResource>>();
            

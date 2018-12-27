@@ -28,7 +28,7 @@ namespace SendGridEmailApplication.Common
         /// </summary>
         public SendGridEmailService()
         {
-            Initialize();
+            
             //TODO :  Move to Initialize method
         }
 
@@ -93,6 +93,7 @@ namespace SendGridEmailApplication.Common
                     msg.AddAttachment(item.FileName, strBase64);
                 }
 
+                Initialize();
                 //Sending the email
                 var response = await _client.SendEmailAsync(msg);
             }

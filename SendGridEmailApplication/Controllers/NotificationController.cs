@@ -21,18 +21,19 @@ namespace SendGridEmailApplication.Controllers
     /// </summary>
     public class NotificationController : ApiController
     {
-        IEmailSender emailSender = null;
-        EmailSenderFactory emailSenderFactory = null;
         EmailValidation validation = new EmailValidation();
         DummyController dummyController = new DummyController();
+        EmailSenderFactory _emailSenderFactory = null;
+        private IEmailSender _emailSender = null;
 
         /// <summary>
-        /// Constructor
+        /// Initializing Email Sender Factory
         /// </summary>
-        public NotificationController()
+        private void Initialize()
         {
-            emailSenderFactory = new EmailSenderFactory();
+            _emailSenderFactory = new EmailSenderFactory();
         }
+
 
         /// <summary>
         /// Method to upload an attachment and Send Email
@@ -45,9 +46,9 @@ namespace SendGridEmailApplication.Controllers
             var emailProvider = ConfigurationManager.AppSettings["EmailProvider"];
             var attachmentLength = ConfigurationManager.AppSettings["AttachmentLength"];
             EmailProviders provider = (EmailProviders)Enum.Parse(typeof(EmailProviders), emailProvider);
-            emailSender = null;
-            //emailSender = emailSenderFactory.EmailSender(provider);
-            
+            Initialize();
+            _emailSender = _emailSenderFactory.EmailSender(provider);
+
             var result = await Request.Content.ReadAsMultipartAsync();
 
             var requestJson = await result.Contents[0].ReadAsStringAsync();
@@ -66,27 +67,17 @@ namespace SendGridEmailApplication.Controllers
                 }
             }
 
-            
-
-
-            //long contentSize = httpRequest.ContentLength;
-            //if (contentSize > Convert.ToInt32(attachmentLength))
-            //{
-            //    var message = Request.CreateErrorResponse(HttpStatusCode.BadRequest, "File upload limit should not exceed 16 MB.");
-            //    return message;
-            //}
-
             dummyController.ParseString(contract.Body, nameof(contract.Body));
             dummyController.ParseString(contract.From, nameof(contract.From));
 
             dummyController.ValidateParameterForNull(contract.From, contract.From);
             dummyController.ValidateParameterForNull(contract.ToEmailAddress, contract.ToEmailAddress);
-            contract.ToEmailAddress = dummyController.ValidateEmail1(contract.ToEmailAddress);
+            //contract.ToEmailAddress = dummyController.ValidateEmail1(contract.ToEmailAddress);
 
             try
             {
                 //Validate(contract);
-                await emailSender.SendEmail(contract, attachments);
+                await _emailSender.SendEmail(contract, attachments);
                 var message = Request.CreateResponse(HttpStatusCode.OK);
                 return message;
             }

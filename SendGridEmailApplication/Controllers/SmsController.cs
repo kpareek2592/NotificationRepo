@@ -19,16 +19,16 @@ namespace SendGridEmailApplication.Controllers
     /// </summary>
     public class SmsController : ApiController
     {
-        ISmsSender smsSender = null;
-        SmsSenderFactory smsSenderFactory = null;
         DummyController dummyController = new DummyController();
+        private ISmsSender _smsSender = null;
+        SmsSenderFactory _smsSenderFactory = null;
 
         /// <summary>
-        /// Constructor
+        /// Initializing SmsSenderFactory
         /// </summary>
-        public SmsController()
+        private void Initialize()
         {
-            smsSenderFactory = new SmsSenderFactory();
+            _smsSenderFactory = new SmsSenderFactory();
         }
 
         /// <summary>
@@ -45,8 +45,10 @@ namespace SendGridEmailApplication.Controllers
             var fromNumber = ConfigurationManager.AppSettings["From"];
 
             SmsProviders provider = (SmsProviders)Enum.Parse(typeof(SmsProviders), smsProvider);
-            smsSender = null;
-            smsSender = smsSenderFactory.SmsSender(provider);
+            _smsSender = null;
+            //Initializing SmsSenderFactory
+            Initialize();
+            _smsSender = _smsSenderFactory.SmsSender(provider);
 
 
             dummyController.ValidateParameterForNull(contract.ToPhoneNumber, contract.ToPhoneNumber);
@@ -75,13 +77,13 @@ namespace SendGridEmailApplication.Controllers
                     if (!isPhoneNumber)
                     {
                         var message = Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid Phone Number.");
-                        //return message;
+                        return message;
                     }
                 }
             }
             try
             {
-                await smsSender.SendSms(contract);
+                await _smsSender.SendSms(contract);
                 var message = Request.CreateResponse(HttpStatusCode.OK, "Message Sent");
                 return message;
             }
